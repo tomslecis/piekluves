@@ -401,11 +401,20 @@ async function changePassword(ev) {
   toast('Galvenā parole nomainīta');
 }
 
+// Google Sheets names exports "<Spreadsheet> - <Tab>.csv"; the tab name becomes the tag.
+function tagFromFileName(name) {
+  const base = name.replace(/\.csv$/i, '');
+  return (base.includes(' - ') ? base.split(' - ').pop() : base).trim();
+}
+
 async function importCsv() {
-  const text = await readFile($('import-csv'));
-  if (!text) return;
-  const rows = parseCsv(text);
-  if (!rows.length) return toast('CSV failā neatradu paroles (vajag kolonnu “password”)', true);
+  const input = $('import-csv');
+  const files = [...input.files];
+  input.value = '';
+  if (!files.length) return;
+  const rows = [];
+  for (const f of files) rows.push(...parseCsv(await f.text(), tagFromFileName(f.name)));
+  if (!rows.length) return toast('CSV failos neatradu nevienu piekļuvi', true);
   const seen = new Set(liveEntries(S.data).map((e) => `${e.url}|${e.username}|${e.password}`));
   const fresh = rows.filter((r) => !seen.has(`${r.url}|${r.username}|${r.password}`));
   S.data.entries.push(...fresh);

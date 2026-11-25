@@ -56,4 +56,8 @@ Otrā ierīcē: pirmajā ekrānā **Atjaunot no Google Sheets** → tā pati sai
 
 ## Imports
 
-Iestatījumi → **Importēt CSV**: der eksports no Chrome / Google paroļu pārvaldnieka, Bitwarden, 1Password u.c. (vajag kolonnu `password`). Pēc importa CSV failu izdzēs, jo tas nav šifrēts.
+Iestatījumi → **Importēt CSV** (var izvēlēties vairākus failus uzreiz):
+- eksports no Chrome / Google paroļu pārvaldnieka, Bitwarden, 1Password u.c. (atpazīst pēc virsrakstiem);
+- paša veidota tabula (piem. Google Sheets: *Fails → Lejupielādēt → CSV* katrai lapai): A = nosaukums, B = login, C = parole, pārējās kolonnas → piezīmes (saite → lauks “Saite”). Rinda tikai ar A kolonnu ir sadaļa; lapas nosaukums un sadaļa kļūst par birkām.
+
+Pēc importa CSV failus izdzēs, jo tie nav šifrēti.

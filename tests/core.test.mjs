@@ -50,6 +50,15 @@ test('csv import (Chrome format)', () => {
   assert.equal(rows[1].notes, 'hi');
 });
 
+test('csv import (hand-made sheet without headers)', () => {
+  const csv = ',Login ,Password,Crack\nBankas\nSwed,user1,pw1,kods 12,https://swedbank.lv\n,user2,pw2\n';
+  const rows = parseCsv(csv, 'Darbs');
+  assert.equal(rows.length, 2);
+  assert.deepEqual([rows[0].title, rows[0].username, rows[0].password, rows[0].url, rows[0].notes], ['Swed', 'user1', 'pw1', 'https://swedbank.lv', 'kods 12']);
+  assert.equal(rows[0].tags, 'Darbs, Bankas');
+  assert.equal(rows[1].title, 'Bankas');
+});
+
 test('generator respects options and length', () => {
   for (let i = 0; i < 50; i++) {
     const pw = generatePassword({ length: 24, symbols: false });

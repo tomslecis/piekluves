@@ -1,3 +1,8 @@
 node_modules/
 .DS_Store
 .env
+
+# Personal screenshots / data never go to the public repo
+Asseti/*
+!Asseti/above-wordmark.png
+*.csv
