@@ -6,3 +6,4 @@ node_modules/
 Asseti/*
 !Asseti/above-wordmark.png
 *.csv
+desktop/dist/

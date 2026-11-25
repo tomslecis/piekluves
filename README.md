@@ -22,6 +22,9 @@ app/                    lietotne (statiska web lietotne, to publicē GitHub Page
   js/generator.js       paroļu ģenerators
   js/sheets.js          savienojums ar Google Apps Script
   sw.js, manifest.webmanifest   bezsaistes režīms un “instalēšana” telefonā
+desktop/                Mac lietotne (Electron), rāda to pašu app/ saskarni no droša app:// adreses
+  main.js, preload.js   logs, aizslēgšana, kad Mac aizmieg vai ekrāns tiek aizslēgts
+scripts/publish.sh      publicē tīru kopiju uz GitHub (bez .above čatiem un personiskajiem failiem)
 google-apps-script/Code.gs      kods, ko ielīmē Google Sheets (Apps Script)
 tests/                  node testi (šifrēšana, apvienošana, CSV, ģenerators)
 .github/workflows/pages.yml     automātiska publicēšana uz GitHub Pages
@@ -34,10 +37,20 @@ cd app && python3 -m http.server 5193
 ```
 Atver http://localhost:5193. Testi: `node --test tests/`.
 
+## Mac lietotne
+
+```
+cd desktop
+npm install
+npm start            # izmēģināt
+npm run install_app  # uzbūvē, ieliek /Applications/Piekluves.app un parakstīt (ad-hoc)
+```
+Mac lietotnei ir savs seifs (atsevišķi no pārlūka): pirmajā reizē izvēlies **Atjaunot no Google Sheets**, un tā sinhronizēsies ar telefonu. Iekšējais nosaukums ir “Piekluves” bez “ļ”, jo macOS ar to neatrod Electron palīgprogrammas.
+
 ## 1. Publicēšana ar GitHub (lai strādā arī telefonā)
 
 1. GitHub izveido jaunu repozitoriju (var būt publisks: kodā nav nekādu noslēpumu, dati repozitorijā nenonāk).
-2. Iepušo šo projektu uz `main` zaru.
+2. Publicē ar `scripts/publish.sh "apraksts"` (repo: tomslecis/piekluves). Lokālā git vēsture netiek sūtīta, tikai pašreizējie lietotnes faili.
 3. Repozitorijā: **Settings → Pages → Source: GitHub Actions**.
 4. Pēc ~1 min lietotne būs pieejama `https://<lietotājvārds>.github.io/<repo>/`.
 5. Telefonā atver šo adresi → **Kopīgot → Pievienot sākuma ekrānam** (iPhone) vai **Instalēt lietotni** (Android). Datorā Chrome adreses joslā → **Instalēt**.

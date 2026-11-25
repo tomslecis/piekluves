@@ -46,6 +46,10 @@ h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: 
 .app-icon { width: 20px; height: 20px; }
 .top-actions { display: flex; align-items: center; gap: 6px; }
 
+/* Mac app: the top bar is the window drag area, controls stay clickable */
+.desktop .topbar { -webkit-app-region: drag; user-select: none; padding: 14px 20px 14px 88px; }
+.desktop .topbar button, .desktop .topbar a { -webkit-app-region: no-drag; }
+
 /* Buttons */
 button, .btn, input, select, textarea { font: inherit; color: inherit; }
 .btn {

@@ -1,0 +1,49 @@
+{
+  "name": "piekluves",
+  "productName": "Piekluves",
+  "version": "1.0.0",
+  "description": "Šifrēts paroļu seifs (Mac lietotne)",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --mac --arm64",
+    "install_app": "electron-builder --mac --arm64 && rm -rf /Applications/Piekļuves.app /Applications/Piekluves.app && ditto --noextattr --noqtn dist/mac-arm64/Piekluves.app /Applications/Piekluves.app && xattr -cr /Applications/Piekluves.app && codesign --force --deep -s - /Applications/Piekluves.app"
+  },
+  "build": {
+    "appId": "lv.above.piekluves",
+    "productName": "Piekluves",
+    "files": [
+      "main.js",
+      "preload.js"
+    ],
+    "extraResources": [
+      {
+        "from": "../app",
+        "to": "web",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "icon": "build/icon.png",
+      "target": [
+        "dir"
+      ],
+      "identity": null,
+      "extendInfo": {
+        "CFBundleDisplayName": "Piekļuves"
+      },
+      "hardenedRuntime": false
+    },
+    "directories": {
+      "output": "dist"
+    }
+  },
+  "devDependencies": {
+    "electron": "^45.5.0",
+    "electron-builder": "^26.18.0"
+  }
+}

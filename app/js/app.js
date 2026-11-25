@@ -627,6 +627,10 @@ function boot() {
     return;
   }
   wire();
+  if (window.piekluvesDesktop) {
+    document.documentElement.classList.add('desktop');
+    window.piekluvesDesktop.onLock(() => { if (S.key) lock(); });
+  }
   navigator.storage?.persist?.().catch(() => {});
   const preview = new URLSearchParams(location.search).has('preview');
   if ('serviceWorker' in navigator && !preview) navigator.serviceWorker.register('sw.js').catch(() => {});
