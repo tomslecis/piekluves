@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="lv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#0b0b0a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Piekļuves">
+  <title>Piekļuves</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/icon-180.png">
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img src="assets/above-wordmark.png" alt="above" class="wordmark">
+      <span class="divider"></span>
+      <span class="app-name"><img src="assets/icon.svg" alt="" class="app-icon">Piekļuves</span>
+    </div>
+    <div class="top-actions" id="top-actions" hidden>
+      <button class="chip" id="sync-btn" title="Sinhronizēt ar Google Sheets"><span class="dot" id="sync-dot"></span><span id="sync-label">Sheets</span></button>
+      <button class="icon-btn" id="settings-btn" title="Iestatījumi" aria-label="Iestatījumi">
+        <svg viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>
+      </button>
+      <button class="icon-btn" id="lock-btn" title="Aizslēgt" aria-label="Aizslēgt">
+        <svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <!-- First run: create a vault -->
+    <section class="screen narrow" id="screen-setup" hidden>
+      <h1>Izveido savu seifu</h1>
+      <p class="muted">Visas piekļuves tiek šifrētas šajā ierīcē ar tavu galveno paroli. Tā nekur netiek sūtīta un to nevar atjaunot, tāpēc izvēlies garu, bet atceramu frāzi.</p>
+      <form id="setup-form" class="stack" autocomplete="off">
+        <label>Galvenā parole
+          <input type="password" id="setup-pw" minlength="10" required autocomplete="new-password">
+        </label>
+        <div class="meter"><span id="setup-meter"></span></div>
+        <label>Atkārto paroli
+          <input type="password" id="setup-pw2" minlength="10" required autocomplete="new-password">
+        </label>
+        <p class="error" id="setup-error"></p>
+        <button class="btn primary" type="submit">Izveidot seifu</button>
+      </form>
+      <div class="or"><span>vai</span></div>
+      <button class="btn ghost wide" id="go-restore">Atjaunot no Google Sheets vai faila</button>
+    </section>
+
+    <!-- New device: restore from Google Sheets -->
+    <section class="screen narrow" id="screen-restore" hidden>
+      <h1>Atjaunot seifu</h1>
+      <p class="muted">Ievadi savas Google Sheets kopijas saiti un atslēgu (tās redzamas otras ierīces iestatījumos) un galveno paroli.</p>
+      <form id="restore-form" class="stack" autocomplete="off">
+        <label>Google Apps Script saite
+          <input type="url" id="restore-url" placeholder="https://script.google.com/macros/s/…/exec" required>
+        </label>
+        <label>Piekļuves atslēga (token)
+          <input type="password" id="restore-token" required>
+        </label>
+        <label>Galvenā parole
+          <input type="password" id="restore-pw" required autocomplete="current-password">
+        </label>
+        <p class="error" id="restore-error"></p>
+        <button class="btn primary" type="submit">Atjaunot no Sheets</button>
+      </form>
+      <div class="or"><span>vai</span></div>
+      <label class="btn ghost wide file-btn">Atjaunot no šifrēta faila (.json)
+        <input type="file" id="restore-file" accept=".json,application/json" hidden>
+      </label>
+      <button class="link-btn" id="back-setup">← Atpakaļ</button>
+    </section>
+
+    <!-- Locked -->
+    <section class="screen narrow" id="screen-lock" hidden>
+      <div class="lock-badge"><img src="assets/icon.svg" alt=""></div>
+      <h1>Seifs aizslēgts</h1>
+      <form id="unlock-form" class="stack" autocomplete="off">
+        <label>Galvenā parole
+          <input type="password" id="unlock-pw" required autocomplete="current-password">
+        </label>
+        <p class="error" id="unlock-error"></p>
+        <button class="btn primary" type="submit" id="unlock-btn">Atslēgt</button>
+      </form>
+    </section>
+
+    <!-- Main list -->
+    <section class="screen" id="screen-main" hidden>
+      <div class="toolbar">
+        <input type="search" id="search" placeholder="Meklēt…" autocomplete="off" spellcheck="false">
+        <button class="btn primary" id="add-btn">+ Jauna</button>
+      </div>
+      <p class="muted small" id="count"></p>
+      <ul class="list" id="list"></ul>
+      <div class="empty" id="empty" hidden>
+        <p>Vēl nav nevienas piekļuves.</p>
+        <p class="muted small">Pievieno pirmo vai importē CSV no Chrome / Google paroļu pārvaldnieka iestatījumos.</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- Entry editor -->
+  <dialog id="entry-dialog" class="sheet">
+    <form id="entry-form" method="dialog" autocomplete="off">
+      <div class="dialog-head">
+        <h2 id="entry-heading">Piekļuve</h2>
+        <button type="button" class="icon-btn" data-close aria-label="Aizvērt">✕</button>
+      </div>
+      <label>Nosaukums
+        <input name="title" required>
+      </label>
+      <label>Lietotājvārds / e-pasts
+        <span class="field"><input name="username" spellcheck="false" autocapitalize="off"><button type="button" class="mini" data-copy="username">Kopēt</button></span>
+      </label>
+      <label>Parole
+        <span class="field">
+          <input name="password" type="password" spellcheck="false" autocapitalize="off" autocomplete="new-password">
+          <button type="button" class="mini" id="pw-toggle">Rādīt</button>
+          <button type="button" class="mini" data-copy="password">Kopēt</button>
+        </span>
+      </label>
+      <div class="meter"><span id="entry-meter"></span></div>
+      <button type="button" class="link-btn" id="open-generator">Ģenerēt drošu paroli</button>
+      <label>Saite
+        <span class="field"><input name="url" type="url" spellcheck="false" placeholder="https://"><a class="mini" id="open-url" target="_blank" rel="noopener noreferrer">Atvērt</a></span>
+      </label>
+      <label>Birkas
+        <input name="tags" placeholder="darbs, banka…">
+      </label>
+      <label>Piezīmes
+        <textarea name="notes" rows="3"></textarea>
+      </label>
+      <p class="muted small" id="entry-meta"></p>
+      <div class="dialog-actions">
+        <button type="button" class="btn danger ghost" id="delete-btn">Dzēst</button>
+        <span class="spacer"></span>
+        <button type="submit" class="btn primary">Saglabāt</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Password generator -->
+  <dialog id="gen-dialog" class="sheet small">
+    <div class="dialog-head">
+      <h2>Paroles ģenerators</h2>
+      <button type="button" class="icon-btn" data-close aria-label="Aizvērt">✕</button>
+    </div>
+    <output id="gen-output" class="gen-output"></output>
+    <label>Garums: <strong id="gen-len-label">20</strong>
+      <input type="range" id="gen-len" min="8" max="64" value="20">
+    </label>
+    <div class="checks">
+      <label><input type="checkbox" id="gen-lower" checked> a–z</label>
+      <label><input type="checkbox" id="gen-upper" checked> A–Z</label>
+      <label><input type="checkbox" id="gen-digits" checked> 0–9</label>
+      <label><input type="checkbox" id="gen-symbols" checked> !@#</label>
+    </div>
+    <div class="dialog-actions">
+      <button type="button" class="btn ghost" id="gen-again">Vēlreiz</button>
+      <span class="spacer"></span>
+      <button type="button" class="btn primary" id="gen-use">Lietot</button>
+    </div>
+  </dialog>
+
+  <!-- Settings -->
+  <dialog id="settings-dialog" class="sheet">
+    <div class="dialog-head">
+      <h2>Iestatījumi</h2>
+      <button type="button" class="icon-btn" data-close aria-label="Aizvērt">✕</button>
+    </div>
+
+    <h3>Google Sheets rezerves kopija</h3>
+    <p class="muted small">Uz Sheets tiek sūtīts tikai šifrēts seifs. Iestatīšana: README → “Google Sheets”.</p>
+    <form id="sheets-form" class="stack" autocomplete="off">
+      <label>Apps Script saite
+        <input type="url" id="set-url" placeholder="https://script.google.com/macros/s/…/exec">
+      </label>
+      <label>Piekļuves atslēga (token)
+        <span class="field"><input type="password" id="set-token"><button type="button" class="mini" id="token-toggle">Rādīt</button></span>
+      </label>
+      <label class="row"><input type="checkbox" id="set-auto"> Automātiski sinhronizēt pēc katras izmaiņas</label>
+      <p class="muted small" id="sheets-status"></p>
+      <div class="btn-row">
+        <button type="submit" class="btn primary">Saglabāt un pārbaudīt</button>
+        <button type="button" class="btn ghost" id="sync-now">Sinhronizēt tagad</button>
+      </div>
+    </form>
+
+    <h3>Drošība</h3>
+    <label>Automātiski aizslēgt pēc
+      <select id="set-lock">
+        <option value="1">1 min</option>
+        <option value="5">5 min</option>
+        <option value="15">15 min</option>
+        <option value="60">1 h</option>
+      </select>
+    </label>
+    <div class="btn-row">
+      <button type="button" class="btn ghost" id="change-pw-btn">Mainīt galveno paroli</button>
+    </div>
+
+    <h3>Imports un eksports</h3>
+    <div class="btn-row">
+      <label class="btn ghost file-btn">Importēt CSV
+        <input type="file" id="import-csv" accept=".csv,text/csv" hidden>
+      </label>
+      <label class="btn ghost file-btn">Importēt šifrētu .json
+        <input type="file" id="import-json" accept=".json,application/json" hidden>
+      </label>
+      <button type="button" class="btn ghost" id="export-json">Lejupielādēt šifrētu kopiju</button>
+    </div>
+
+    <h3>Šī ierīce</h3>
+    <label>Ierīces nosaukums (redzams Sheets kopijās)
+      <input id="set-device" maxlength="40">
+    </label>
+    <div class="btn-row">
+      <button type="button" class="btn danger ghost" id="wipe-btn">Dzēst seifu no šīs ierīces</button>
+    </div>
+  </dialog>
+
+  <!-- Change master password -->
+  <dialog id="pw-dialog" class="sheet small">
+    <form id="pw-form" class="stack" autocomplete="off">
+      <div class="dialog-head">
+        <h2>Mainīt galveno paroli</h2>
+        <button type="button" class="icon-btn" data-close aria-label="Aizvērt">✕</button>
+      </div>
+      <label>Pašreizējā parole <input type="password" id="pw-old" required autocomplete="current-password"></label>
+      <label>Jaunā parole <input type="password" id="pw-new" minlength="10" required autocomplete="new-password"></label>
+      <label>Atkārto jauno <input type="password" id="pw-new2" minlength="10" required autocomplete="new-password"></label>
+      <p class="error" id="pw-error"></p>
+      <button type="submit" class="btn primary">Mainīt</button>
+    </form>
+  </dialog>
+
+  <!-- Generic password / confirm prompt -->
+  <dialog id="ask-dialog" class="sheet small">
+    <form id="ask-form" class="stack" autocomplete="off">
+      <h2 id="ask-title"></h2>
+      <p class="muted small" id="ask-text"></p>
+      <input type="password" id="ask-input" autocomplete="current-password">
+      <div class="dialog-actions">
+        <button type="button" class="btn ghost" id="ask-cancel">Atcelt</button>
+        <span class="spacer"></span>
+        <button type="submit" class="btn primary" id="ask-ok">Labi</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
