@@ -6,6 +6,8 @@
  * (copy the token from the log), then Deploy → New deployment → Web app,
  * Execute as: Me, Who has access: Anyone. Copy the /exec URL into the app.
  */
+// Leave empty when the script is bound to the spreadsheet; set the spreadsheet ID for a standalone script.
+const SPREADSHEET_ID = '';
 const SHEET_NAME = 'Backups';
 const KEEP = 50;
 const CHUNK = 40000; // a cell holds max 50 000 characters
@@ -71,7 +73,7 @@ function latest_() {
 }
 
 function sheet_() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = SPREADSHEET_ID ? SpreadsheetApp.openById(SPREADSHEET_ID) : SpreadsheetApp.getActiveSpreadsheet();
   let sh = ss.getSheetByName(SHEET_NAME);
   if (!sh) {
     sh = ss.insertSheet(SHEET_NAME);

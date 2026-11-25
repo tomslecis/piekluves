@@ -31,6 +31,7 @@ export function newEntry(fields = {}) {
     url: '',
     notes: '',
     tags: '',
+    group: '',
     ...fields,
     updatedAt: Date.now(),
   };
@@ -57,6 +58,19 @@ export function signature(data) {
   return data.entries.map((e) => `${e.id}:${e.updatedAt}`).sort().join('|');
 }
 
+export const NO_GROUP = 'Bez sadaļas';
+
+export function groupOf(e) {
+  return (e.group || '').trim() || NO_GROUP;
+}
+
+// Section names with entry counts, alphabetical, "no section" last.
+export function groupList(entries) {
+  const counts = new Map();
+  for (const e of entries) counts.set(groupOf(e), (counts.get(groupOf(e)) || 0) + 1);
+  return [...counts].sort(([a], [b]) => (a === NO_GROUP) - (b === NO_GROUP) || a.localeCompare(b, 'lv'));
+}
+
 export function liveEntries(data) {
   return data.entries.filter((e) => !e.deleted);
 }
@@ -66,7 +80,7 @@ const HEADER_RE = /^(login|user(name)?|lietot[āa]j(s|vārds)|e-?pasts|email|pas
 
 // Parses CSV exports from Chrome / Google Password Manager / Bitwarden / 1Password etc.
 // Files without such headers (e.g. a hand-made Google Sheet tab) fall back to parseLooseRows.
-export function parseCsv(text, tag = '') {
+export function parseCsv(text, group = '') {
   const rows = [];
   let row = [], field = '', q = false;
   for (let i = 0; i < text.length; i++) {
@@ -87,7 +101,7 @@ export function parseCsv(text, tag = '') {
   if (!clean.length) return [];
   const head = clean[0].map((h) => h.trim().toLowerCase());
   const known = head.includes('password') && head.some((h) => ['name', 'title', 'url', 'login_uri'].includes(h));
-  if (!known) return parseLooseRows(clean, tag);
+  if (!known) return parseLooseRows(clean, group);
   const col = (...names) => head.findIndex((h) => names.includes(h));
   const idx = {
     title: col('name', 'title'),
@@ -102,13 +116,14 @@ export function parseCsv(text, tag = '') {
     const url = get('url');
     let title = get('title');
     if (!title && url) { try { title = new URL(url).hostname.replace(/^www\./, ''); } catch { title = url; } }
-    return newEntry({ title: title || 'Bez nosaukuma', url, username: get('username'), password: get('password'), notes: get('notes'), tags: tag });
+    return newEntry({ title: title || 'Bez nosaukuma', url, username: get('username'), password: get('password'), notes: get('notes'), group });
   });
 }
 
 // Positional layout: A = name, B = login, C = password, rest = notes.
-// A row with only column A filled is a section heading and becomes a tag for the rows below it.
-export function parseLooseRows(rows, tag = '') {
+// A row with only column A filled is a sub-heading and becomes a tag for the rows below it.
+// `group` (the sheet tab / file name) becomes the entry's section.
+export function parseLooseRows(rows, group = '') {
   const out = [];
   let section = '';
   for (const r of rows) {
@@ -130,7 +145,8 @@ export function parseLooseRows(rows, tag = '') {
       password: cells[2] || '',
       url,
       notes: rest.join('\n'),
-      tags: [...new Set([tag, section].filter(Boolean))].join(', '),
+      tags: section,
+      group,
     }));
   }
   return out;

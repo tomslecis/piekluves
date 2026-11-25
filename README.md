@@ -65,6 +65,8 @@ Svarīgi: iPhone obligāti pievieno sākuma ekrānam, jo Safari pārlūka dati v
 4. **Izvietot → Jauns izvietojums → Tīmekļa lietotne**: Izpildīt kā: *Es*, Piekļuve: *Ikviens*. Nokopē saiti, kas beidzas ar `/exec`.
 5. Lietotnē: **Iestatījumi → Google Sheets** → ielīmē saiti un token → **Saglabāt un pārbaudīt**.
 
+Ja Chrome ir ielogoti vairāki Google konti un *Paplašinājumi → Apps Script* neatveras, izveido atsevišķu projektu script.google.com (ar pareizo kontu) un `Code.gs` ierakstī `SPREADSHEET_ID` = tabulas ID no adreses.
+
 Otrā ierīcē: pirmajā ekrānā **Atjaunot no Google Sheets** → tā pati saite, token un galvenā parole. Turpmāk abas ierīces sinhronizējas automātiski (katrs ieraksts apvienojas pēc jaunākās izmaiņas, arī dzēšana).
 
 ## Imports

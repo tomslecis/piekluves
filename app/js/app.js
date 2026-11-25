@@ -1,5 +1,5 @@
 import { createKey, keyForFile, seal, open, isVaultFile } from './crypto.js';
-import { storage, emptyData, newEntry, mergeData, signature, liveEntries, parseCsv } from './vault.js';
+import { storage, emptyData, newEntry, mergeData, signature, liveEntries, parseCsv, groupList, groupOf, NO_GROUP } from './vault.js';
 import { generatePassword, strength } from './generator.js';
 import { sheets, isValidSheetUrl } from './sheets.js';
 
@@ -133,6 +133,7 @@ function lock() {
   S.key = S.kdf = S.data = null;
   keyCache.clear();
   editingId = null;
+  activeGroup = null;
   clearTimeout(syncTimer);
   for (const d of document.querySelectorAll('dialog[open]')) d.close();
   $('list').replaceChildren();
@@ -210,46 +211,91 @@ async function sync_({ manual = false } = {}) {
 
 /* ---------- list ---------- */
 
+let activeGroup = null; // selected section filter, null = all
+
+function entryRow(e) {
+  const li = document.createElement('li');
+  const btn = document.createElement('div');
+  btn.className = 'item';
+  btn.tabIndex = 0;
+  btn.setAttribute('role', 'button');
+  const av = document.createElement('span');
+  av.className = 'avatar';
+  av.textContent = (e.title || '?').trim()[0] || '?';
+  const text = document.createElement('span');
+  text.className = 'item-text';
+  const t = document.createElement('span');
+  t.className = 'item-title';
+  t.textContent = e.title || 'Bez nosaukuma';
+  const sub = document.createElement('span');
+  sub.className = 'item-sub';
+  sub.textContent = e.username || e.url || e.tags || '';
+  text.append(t, sub);
+  const copy = document.createElement('button');
+  copy.className = 'item-copy';
+  copy.textContent = 'Parole';
+  copy.title = 'Kopēt paroli';
+  copy.hidden = !e.password;
+  copy.onclick = (ev) => { ev.stopPropagation(); copyText(e.password, 'Parole nokopēta'); };
+  btn.append(av, text, copy);
+  btn.onclick = () => openEntry(e.id);
+  btn.onkeydown = (ev) => { if (ev.key === 'Enter') openEntry(e.id); };
+  li.append(btn);
+  return li;
+}
+
+function renderGroupChips(groups, total) {
+  const bar = $('groups');
+  bar.hidden = groups.length < 2;
+  const chip = (label, value, n) => {
+    const b = document.createElement('button');
+    b.className = 'group-chip';
+    b.classList.toggle('active', activeGroup === value);
+    b.textContent = label;
+    const c = document.createElement('span');
+    c.textContent = n;
+    b.append(c);
+    b.onclick = () => { activeGroup = value; render(); };
+    return b;
+  };
+  bar.replaceChildren(chip('Visas', null, total), ...groups.map(([g, n]) => chip(g, g, n)));
+  $('group-options').replaceChildren(...groups.filter(([g]) => g !== NO_GROUP).map(([g]) => {
+    const o = document.createElement('option');
+    o.value = g;
+    return o;
+  }));
+}
+
 function render() {
   if (!S.data) return;
   const q = $('search').value.trim().toLowerCase();
   const all = liveEntries(S.data);
+  const groups = groupList(all);
+  if (activeGroup && !groups.some(([g]) => g === activeGroup)) activeGroup = null;
+  renderGroupChips(groups, all.length);
   const items = all
-    .filter((e) => !q || [e.title, e.username, e.url, e.tags, e.notes].some((v) => (v || '').toLowerCase().includes(q)))
+    .filter((e) => !activeGroup || groupOf(e) === activeGroup)
+    .filter((e) => !q || [e.title, e.username, e.url, e.tags, e.notes, e.group].some((v) => (v || '').toLowerCase().includes(q)))
     .sort((a, b) => (a.title || '').localeCompare(b.title || '', 'lv'));
 
   const list = $('list');
-  list.replaceChildren(...items.map((e) => {
-    const li = document.createElement('li');
-    const btn = document.createElement('div');
-    btn.className = 'item';
-    btn.tabIndex = 0;
-    btn.setAttribute('role', 'button');
-    const av = document.createElement('span');
-    av.className = 'avatar';
-    av.textContent = (e.title || '?').trim()[0] || '?';
-    const text = document.createElement('span');
-    text.className = 'item-text';
-    const t = document.createElement('span');
-    t.className = 'item-title';
-    t.textContent = e.title || 'Bez nosaukuma';
-    const sub = document.createElement('span');
-    sub.className = 'item-sub';
-    sub.textContent = e.username || e.url || '';
-    text.append(t, sub);
-    const copy = document.createElement('button');
-    copy.className = 'item-copy';
-    copy.textContent = 'Parole';
-    copy.title = 'Kopēt paroli';
-    copy.onclick = (ev) => { ev.stopPropagation(); copyText(e.password, 'Parole nokopēta'); };
-    btn.append(av, text, copy);
-    btn.onclick = () => openEntry(e.id);
-    btn.onkeydown = (ev) => { if (ev.key === 'Enter') openEntry(e.id); };
-    li.append(btn);
-    return li;
-  }));
+  if (activeGroup || groups.length < 2) {
+    list.replaceChildren(...items.map(entryRow));
+  } else {
+    // "All" view: one heading per section, in the same order as the chips.
+    const nodes = [];
+    for (const [g] of groups) {
+      const inGroup = items.filter((e) => groupOf(e) === g);
+      if (!inGroup.length) continue;
+      const head = document.createElement('li');
+      head.className = 'group-head';
+      head.textContent = g;
+      nodes.push(head, ...inGroup.map(entryRow));
+    }
+    list.replaceChildren(...nodes);
+  }
   $('empty').hidden = all.length > 0;
-  $('count').textContent = all.length ? (q ? `${items.length} no ${all.length}` : `${all.length} piekļuves`) : '';
+  $('count').textContent = all.length ? (q || activeGroup ? `${items.length} no ${all.length}` : `${all.length} piekļuves`) : '';
 }
 
 /* ---------- entry editor ---------- */
@@ -258,7 +304,8 @@ function openEntry(id) {
   const e = id ? S.data.entries.find((x) => x.id === id) : null;
   editingId = e ? e.id : null;
   const f = $('entry-form');
-  for (const k of ['title', 'username', 'password', 'url', 'tags', 'notes']) f.elements[k].value = e ? e[k] || '' : '';
+  for (const k of ['title', 'username', 'password', 'url', 'group', 'tags', 'notes']) f.elements[k].value = e ? e[k] || '' : '';
+  if (!e && activeGroup && activeGroup !== NO_GROUP) f.elements.group.value = activeGroup;
   f.elements.password.type = 'password';
   $('pw-toggle').textContent = 'Rādīt';
   $('entry-heading').textContent = e ? e.title || 'Piekļuve' : 'Jauna piekļuve';
@@ -281,7 +328,7 @@ async function saveEntry(ev) {
   ev.preventDefault();
   const f = $('entry-form');
   const vals = {};
-  for (const k of ['title', 'username', 'password', 'url', 'tags', 'notes']) vals[k] = f.elements[k].value.trim();
+  for (const k of ['title', 'username', 'password', 'url', 'group', 'tags', 'notes']) vals[k] = f.elements[k].value.trim();
   vals.password = f.elements.password.value; // keep exact password, spaces included
   if (editingId) {
     const e = S.data.entries.find((x) => x.id === editingId);
@@ -401,8 +448,8 @@ async function changePassword(ev) {
   toast('Galvenā parole nomainīta');
 }
 
-// Google Sheets names exports "<Spreadsheet> - <Tab>.csv"; the tab name becomes the tag.
-function tagFromFileName(name) {
+// Google Sheets names exports "<Spreadsheet> - <Tab>.csv"; the tab name becomes the section.
+function groupFromFileName(name) {
   const base = name.replace(/\.csv$/i, '');
   return (base.includes(' - ') ? base.split(' - ').pop() : base).trim();
 }
@@ -413,7 +460,7 @@ async function importCsv() {
   input.value = '';
   if (!files.length) return;
   const rows = [];
-  for (const f of files) rows.push(...parseCsv(await f.text(), tagFromFileName(f.name)));
+  for (const f of files) rows.push(...parseCsv(await f.text(), groupFromFileName(f.name)));
   if (!rows.length) return toast('CSV failos neatradu nevienu piekļuvi', true);
   const seen = new Set(liveEntries(S.data).map((e) => `${e.url}|${e.username}|${e.password}`));
   const fresh = rows.filter((r) => !seen.has(`${r.url}|${r.username}|${r.password}`));

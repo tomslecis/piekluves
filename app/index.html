@@ -97,6 +97,7 @@
         <input type="search" id="search" placeholder="Meklēt…" autocomplete="off" spellcheck="false">
         <button class="btn primary" id="add-btn">+ Jauna</button>
       </div>
+      <div class="groups" id="groups" hidden></div>
       <p class="muted small" id="count"></p>
       <ul class="list" id="list"></ul>
       <div class="empty" id="empty" hidden>
@@ -130,6 +131,10 @@
       <button type="button" class="link-btn" id="open-generator">Ģenerēt drošu paroli</button>
       <label>Saite
         <span class="field"><input name="url" type="url" spellcheck="false" placeholder="https://"><a class="mini" id="open-url" target="_blank" rel="noopener noreferrer">Atvērt</a></span>
+      </label>
+      <label>Sadaļa
+        <input name="group" list="group-options" placeholder="piem. Darbs, Private…" autocomplete="off">
+        <datalist id="group-options"></datalist>
       </label>
       <label>Birkas
         <input name="tags" placeholder="darbs, banka…">

@@ -55,7 +55,8 @@ test('csv import (hand-made sheet without headers)', () => {
   const rows = parseCsv(csv, 'Darbs');
   assert.equal(rows.length, 2);
   assert.deepEqual([rows[0].title, rows[0].username, rows[0].password, rows[0].url, rows[0].notes], ['Swed', 'user1', 'pw1', 'https://swedbank.lv', 'kods 12']);
-  assert.equal(rows[0].tags, 'Darbs, Bankas');
+  assert.equal(rows[0].tags, 'Bankas');
+  assert.equal(rows[0].group, 'Darbs');
   assert.equal(rows[1].title, 'Bankas');
 });
 

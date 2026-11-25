@@ -144,6 +144,18 @@ main { padding: 24px 20px 60px; }
 .item-copy { flex: none; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--line); background: transparent; color: var(--stone); font-size: 12px; cursor: pointer; }
 .item-copy:hover { color: var(--accent); border-color: var(--olive); }
 .empty { text-align: center; padding: 40px 0; }
+.groups { display: flex; gap: 6px; overflow-x: auto; padding: 2px 0 10px; scrollbar-width: none; }
+.groups::-webkit-scrollbar { display: none; }
+.group-chip {
+  flex: none; display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px;
+  border-radius: 99px; border: 1px solid var(--line); background: var(--panel); color: var(--stone); cursor: pointer; font-size: 13px;
+}
+.group-chip span { font-size: 11px; color: var(--olive); }
+.group-chip:hover { border-color: var(--olive); color: var(--beige); }
+.group-chip.active { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.group-chip.active span { color: var(--accent-ink); }
+.group-head { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin: 14px 2px 2px; font-weight: 600; }
+.group-head:first-child { margin-top: 0; }
 
 /* Dialogs */
 dialog.sheet {
